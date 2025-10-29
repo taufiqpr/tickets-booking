@@ -10,12 +10,13 @@ import (
 	"ticket-booking/user-service/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	_ = godotenv.Load()
-	cfg := config.LoadConfigFromEnv("USER_", "user-service", "8081")
+	cfg, err := config.LoadEnv("USER_")
+	if err != nil {
+		log.Fatalf("load env: %v", err)
+	}
 
 	pool, err := newDBPool(cfg)
 	if err != nil {
@@ -23,7 +24,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	_ = runInitUp(pool) // idempotent
+	_ = runInitUp(pool) 
 	log.Println("db connected")
 
 	mux := http.NewServeMux()

@@ -7,13 +7,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"ticket-booking/gateway/config"
 )
 
 func main() {
-	_ = godotenv.Load()
-	cfg := config.Load()
+	cfg, err := config.LoadEnv()
+	if err != nil {
+		log.Fatalf("load env: %v", err)
+	}
 	mux := http.NewServeMux()
 
 	mux.Handle("/users/", makeProxy(cfg.UserBaseURL, "/users/"))
@@ -30,7 +31,6 @@ func makeProxy(targetBase, prefix string) http.Handler {
 	t, _ := url.Parse(targetBase)
 	rp := httputil.NewSingleHostReverseProxy(t)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// strip prefix
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 		if !strings.HasPrefix(r.URL.Path, "/") { r.URL.Path = "/" + r.URL.Path }
 		rp.ServeHTTP(w, r)

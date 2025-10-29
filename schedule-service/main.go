@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 	"ticket-booking/schedule-service/config"
 )
 
 func main() {
-	_ = godotenv.Load()
-	cfg := config.LoadConfigFromEnv("SCHEDULE_", "schedule-service", "8083")
+	cfg, err := config.LoadEnv("SCHEDULE_")
+	if err != nil {
+		log.Fatalf("load env: %v", err)
+	}
 
 	pool, err := newDBPool(cfg)
 	if err != nil {
