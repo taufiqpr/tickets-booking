@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"ticket-booking/user-service/config"
@@ -24,7 +23,6 @@ func main() {
 	}
 	defer pool.Close()
 
-	_ = runInitUp(pool) 
 	log.Println("db connected")
 
 	mux := http.NewServeMux()
@@ -55,15 +53,4 @@ func newDBPool(cfg *config.Config) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 	return pool, nil
-}
-
-func runInitUp(pool *pgxpool.Pool) error {
-	b, err := os.ReadFile("db/migration/init_up.sql")
-	if err != nil {
-		return nil
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	_, err = pool.Exec(ctx, string(b))
-	return err
 }

@@ -1,4 +1,7 @@
-.PHONY: run-user run-train run-schedule run-booking run-gateway run-all build-all
+.PHONY: run-user run-train run-schedule run-booking run-gateway run-all build-all \
+	migrate-up-user migrate-down-user migrate-up-train migrate-down-train \
+	migrate-up-schedule migrate-down-schedule migrate-up-booking migrate-down-booking \
+	migrate-up-all migrate-down-all
 
 run-user:
 	go run -C user-service .

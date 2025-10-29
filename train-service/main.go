@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -23,7 +22,6 @@ func main() {
 	}
 	defer pool.Close()
 
-	_ = runInitUp(pool)
 	log.Println("db connected")
 
 	mux := http.NewServeMux()
@@ -44,13 +42,4 @@ func newDBPool(cfg *config.Config) (*pgxpool.Pool, error) {
 	defer cancel2()
 	if err := pool.Ping(ctx2); err != nil { pool.Close(); return nil, err }
 	return pool, nil
-}
-
-func runInitUp(pool *pgxpool.Pool) error {
-	b, err := os.ReadFile("db/migration/init_up.sql")
-	if err != nil { return nil }
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	_, err = pool.Exec(ctx, string(b))
-	return err
 }
