@@ -1,0 +1,131 @@
+version: "3.9"
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - user-service
+      - train-service
+      - schedule-service
+      - booking-service
+
+  user-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: userpass
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d userdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./services/user-service/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  user-service:
+    build: ./services/user-service
+    environment:
+      DB_HOST: user-db
+      DB_PORT: "5432"
+      DB_NAME: userdb
+      DB_USER: user
+      DB_PASSWORD: userpass
+      DB_SSLMODE: disable
+      SERVICE_NAME: user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+
+  train-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: traindb
+      POSTGRES_USER: train
+      POSTGRES_PASSWORD: trainpass
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U train -d traindb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./services/train-service/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  train-service:
+    build: ./services/train-service
+    environment:
+      DB_HOST: train-db
+      DB_PORT: "5432"
+      DB_NAME: traindb
+      DB_USER: train
+      DB_PASSWORD: trainpass
+      DB_SSLMODE: disable
+      SERVICE_NAME: train-service
+    depends_on:
+      train-db:
+        condition: service_healthy
+
+  schedule-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: scheduledb
+      POSTGRES_USER: schedule
+      POSTGRES_PASSWORD: schedulepass
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schedule -d scheduledb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./services/schedule-service/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  schedule-service:
+    build: ./services/schedule-service
+    environment:
+      DB_HOST: schedule-db
+      DB_PORT: "5432"
+      DB_NAME: scheduledb
+      DB_USER: schedule
+      DB_PASSWORD: schedulepass
+      DB_SSLMODE: disable
+      SERVICE_NAME: schedule-service
+    depends_on:
+      schedule-db:
+        condition: service_healthy
+
+  booking-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: bookingdb
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: bookingpass
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking -d bookingdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./services/booking-service/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  booking-service:
+    build: ./services/booking-service
+    environment:
+      DB_HOST: booking-db
+      DB_PORT: "5432"
+      DB_NAME: bookingdb
+      DB_USER: booking
+      DB_PASSWORD: bookingpass
+      DB_SSLMODE: disable
+      SERVICE_NAME: booking-service
+    depends_on:
+      booking-db:
+        condition: service_healthy

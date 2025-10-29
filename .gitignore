@@ -1,0 +1,81 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+!.env.example
+!.env.schema
+
+# Logs
+logs/
+*.log
+*.tmp
+
+# Node.js
+node_modules/
+.npm/
+.pnpm-debug.log*
+.yarn/*
+
+# Build outputs
+/dist/
+/build/
+/out/
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Java / Kotlin / Gradle
+.gradle/
+/build/
+/classes/
+*.class
+
+# Rust
+/target/
+
+# Go
+/bin/
+
+# Swift / Xcode
+DerivedData/
+*.xcuserdata
+*.xcuserstate
+
+# IDEs and editors
+.idea/
+.vscode/
+.vs/
+*.swp
+*.swo
+
+# Infrastructure
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+.serverless/
+.vercel/
+.netlify/
+
+# Misc
+/tmp/
+/temp/
