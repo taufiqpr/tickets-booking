@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS trains (
     type VARCHAR(50) NOT NULL,
     total_seats INT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP NOT NULL
 );

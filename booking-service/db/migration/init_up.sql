@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     schedule_id INT NOT NULL,
     quantity INT NOT NULL,
     set_seats TEXT,
+    -- 1 = 
     status INT NOT NULL DEFAULT 1,
     expired_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
