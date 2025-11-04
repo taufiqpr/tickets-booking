@@ -17,10 +17,10 @@ func NewHTTPHandler(userService service.UserService) *HTTPHandler {
 
 func (h *HTTPHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		FullName string `json:"full_name"`
+		Username        string `json:"username"`
+		Email           string `json:"email"`
+		Password        string `json:"password"`
+		ConfirmPassword string `json:"confirm_password"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -28,9 +28,9 @@ func (h *HTTPHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.userService.Register(r.Context(), req.Username, req.Email, req.Password, req.FullName)
+	user, token, err := h.userService.Register(r.Context(), req.Username, req.Email, req.Password, req.ConfirmPassword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -38,13 +38,11 @@ func (h *HTTPHandler) Register(w http.ResponseWriter, r *http.Request) {
 		UserId   int64  `json:"user_id"`
 		Username string `json:"username"`
 		Email    string `json:"email"`
-		FullName string `json:"full_name"`
 		Token    string `json:"token"`
 	}{
 		UserId:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		FullName: user.FullName,
 		Token:    token,
 	}
 
@@ -73,13 +71,11 @@ func (h *HTTPHandler) Login(w http.ResponseWriter, r *http.Request) {
 		UserId   int64  `json:"user_id"`
 		Username string `json:"username"`
 		Email    string `json:"email"`
-		FullName string `json:"full_name"`
 		Token    string `json:"token"`
 	}{
 		UserId:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		FullName: user.FullName,
 		Token:    token,
 	}
 

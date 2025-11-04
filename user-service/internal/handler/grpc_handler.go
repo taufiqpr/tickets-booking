@@ -19,7 +19,7 @@ func NewGrpcServer(userService service.UserService) *GrpcServer {
 }
 
 func (s *GrpcServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	user, token, err := s.userService.Register(ctx, req.Username, req.Email, req.Password, req.FullName)
+	user, token, err := s.userService.Register(ctx, req.Username, req.Email, req.Password, req.ConfirmPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,6 @@ func (s *GrpcServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		UserId:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		FullName: user.FullName,
 		Token:    token,
 	}, nil
 }
@@ -43,7 +42,6 @@ func (s *GrpcServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 		UserId:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		FullName: user.FullName,
 		Token:    token,
 	}, nil
 }
@@ -58,7 +56,6 @@ func (s *GrpcServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.G
 		UserId:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		FullName: user.FullName,
 	}, nil
 }
 

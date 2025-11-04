@@ -11,10 +11,10 @@ import (
 
 // RegisterRequest represents registration request
 type RegisterRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	FullName string `json:"full_name"`
+	Username        string `json:"username"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
 }
 
 // RegisterResponse represents registration response
@@ -22,7 +22,6 @@ type RegisterResponse struct {
 	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
-	FullName string `json:"full_name"`
 	Token    string `json:"token"`
 }
 
@@ -37,7 +36,6 @@ type LoginResponse struct {
 	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
-	FullName string `json:"full_name"`
 	Token    string `json:"token"`
 }
 
@@ -51,7 +49,6 @@ type GetUserResponse struct {
 	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
-	FullName string `json:"full_name"`
 }
 
 // ForgotPasswordRequest represents forgot password request

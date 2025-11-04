@@ -27,12 +27,12 @@ func NewUserClient(host string, port int) (*UserClient, error) {
 	return &UserClient{client: client}, nil
 }
 
-func (c *UserClient) Register(ctx context.Context, username, email, password, fullName string) (*pb.RegisterResponse, error) {
+func (c *UserClient) Register(ctx context.Context, username, email, password, confirmPassword string) (*pb.RegisterResponse, error) {
 	return c.client.Register(ctx, &pb.RegisterRequest{
-		Username: username,
-		Email:    email,
-		Password: password,
-		FullName: fullName,
+		Username:        username,
+		Email:           email,
+		Password:        password,
+		ConfirmPassword: confirmPassword,
 	})
 }
 

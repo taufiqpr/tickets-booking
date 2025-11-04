@@ -21,17 +21,16 @@ func NewUserHTTPClient(host string, port int) *UserHTTPClient {
 }
 
 type RegisterRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	FullName string `json:"full_name"`
+	Username        string `json:"username"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
 }
 
 type RegisterResponse struct {
 	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
-	FullName string `json:"full_name"`
 	Token    string `json:"token"`
 }
 
@@ -44,7 +43,6 @@ type LoginResponse struct {
 	UserId   int64  `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
-	FullName string `json:"full_name"`
 	Token    string `json:"token"`
 }
 
@@ -68,12 +66,12 @@ type ResetPasswordResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *UserHTTPClient) Register(ctx context.Context, username, email, password, fullName string) (*RegisterResponse, error) {
+func (c *UserHTTPClient) Register(ctx context.Context, username, email, password, confirmPassword string) (*RegisterResponse, error) {
 	req := RegisterRequest{
-		Username: username,
-		Email:    email,
-		Password: password,
-		FullName: fullName,
+		Username:        username,
+		Email:           email,
+		Password:        password,
+		ConfirmPassword: confirmPassword,
 	}
 
 	jsonData, err := json.Marshal(req)

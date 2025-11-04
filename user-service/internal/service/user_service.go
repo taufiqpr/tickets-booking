@@ -12,7 +12,7 @@ import (
 )
 
 type UserService interface {
-	Register(ctx context.Context, username, email, password, fullName string) (*repository.User, string, error)
+	Register(ctx context.Context, username, email, password, confirmPassword string) (*repository.User, string, error)
 	Login(ctx context.Context, username, password string) (*repository.User, string, error)
 	GetUser(ctx context.Context, id int64) (*repository.User, error)
 	ForgotPassword(ctx context.Context, email string) (string, error)
@@ -31,7 +31,12 @@ func NewUserService(userRepo repository.UserRepository, jwtKey string) UserServi
 	}
 }
 
-func (s *userService) Register(ctx context.Context, username, email, password, fullName string) (*repository.User, string, error) {
+func (s *userService) Register(ctx context.Context, username, email, password, confirmPassword string) (*repository.User, string, error) {
+	// Validate password confirmation
+	if password != confirmPassword {
+		return nil, "", errors.New("password and confirm password do not match")
+	}
+
 	// Check if user already exists
 	existingUser, _ := s.userRepo.GetByUsername(ctx, username)
 	if existingUser != nil {
@@ -53,7 +58,6 @@ func (s *userService) Register(ctx context.Context, username, email, password, f
 		Username: username,
 		Email:    email,
 		Password: string(hashedPassword),
-		FullName: fullName,
 	}
 
 	user, err = s.userRepo.Create(ctx, user)

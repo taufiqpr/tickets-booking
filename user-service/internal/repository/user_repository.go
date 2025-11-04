@@ -11,7 +11,6 @@ type User struct {
 	Username string
 	Email    string
 	Password string
-	FullName string
 }
 
 type UserRepository interface {
@@ -33,9 +32,9 @@ func NewUserRepository(db *pgxpool.Pool) UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *User) (*User, error) {
-	query := `INSERT INTO users (username, email, password, full_name, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id`
+	query := `INSERT INTO users (username, email, password, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id`
 
-	err := r.db.QueryRow(ctx, query, user.Username, user.Email, user.Password, user.FullName).Scan(&user.ID)
+	err := r.db.QueryRow(ctx, query, user.Username, user.Email, user.Password).Scan(&user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +43,10 @@ func (r *userRepository) Create(ctx context.Context, user *User) (*User, error) 
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id int64) (*User, error) {
-	query := `SELECT id, username, email, password, full_name FROM users WHERE id = $1 AND deleted_at IS NULL`
+	query := `SELECT id, username, email, password FROM users WHERE id = $1 AND deleted_at IS NULL`
 
 	user := &User{}
-	err := r.db.QueryRow(ctx, query, id).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.FullName)
+	err := r.db.QueryRow(ctx, query, id).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -56,10 +55,10 @@ func (r *userRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 }
 
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
-	query := `SELECT id, username, email, password, full_name FROM users WHERE username = $1 AND deleted_at IS NULL`
+	query := `SELECT id, username, email, password FROM users WHERE username = $1 AND deleted_at IS NULL`
 
 	user := &User{}
-	err := r.db.QueryRow(ctx, query, username).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.FullName)
+	err := r.db.QueryRow(ctx, query, username).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -68,10 +67,10 @@ func (r *userRepository) GetByUsername(ctx context.Context, username string) (*U
 }
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*User, error) {
-	query := `SELECT id, username, email, password, full_name FROM users WHERE email = $1 AND deleted_at IS NULL`
+	query := `SELECT id, username, email, password FROM users WHERE email = $1 AND deleted_at IS NULL`
 
 	user := &User{}
-	err := r.db.QueryRow(ctx, query, email).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.FullName)
+	err := r.db.QueryRow(ctx, query, email).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		return nil, err
 	}
