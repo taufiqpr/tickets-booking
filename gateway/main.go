@@ -2,12 +2,13 @@ package main
 
 import (
 	"log"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"strings"
+
+	"github.com/gin-gonic/gin"
 
 	"ticket-booking/gateway/config"
+	"ticket-booking/gateway/internal/client"
+	"ticket-booking/gateway/internal/handler"
+	"ticket-booking/gateway/internal/middleware"
 )
 
 func main() {
@@ -15,24 +16,80 @@ func main() {
 	if err != nil {
 		log.Fatalf("load env: %v", err)
 	}
-	mux := http.NewServeMux()
 
-	mux.Handle("/users/", makeProxy(cfg.UserBaseURL, "/users/"))
-	mux.Handle("/trains/", makeProxy(cfg.TrainBaseURL, "/trains/"))
-	mux.Handle("/schedules/", makeProxy(cfg.SchedBaseURL, "/schedules/"))
-	mux.Handle("/bookings/", makeProxy(cfg.BookBaseURL, "/bookings/"))
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
+	// Initialize clients
+	userClient := client.NewUserHTTPClient(cfg.UserHost, cfg.UserPort)
+
+	bookingClient, err := client.NewBookingClient(cfg.BookHost, cfg.BookPort)
+	if err != nil {
+		log.Fatalf("create booking client: %v", err)
+	}
+
+	trainClient, err := client.NewTrainClient(cfg.TrainHost, cfg.TrainPort)
+	if err != nil {
+		log.Fatalf("create train client: %v", err)
+	}
+
+	scheduleClient, err := client.NewScheduleClient(cfg.ScheduleHost, cfg.SchedulePort)
+	if err != nil {
+		log.Fatalf("create schedule client: %v", err)
+	}
+
+	// Initialize middleware
+	authMiddleware := middleware.NewAuthMiddleware("your-jwt-secret-key-here")
+
+	// Initialize handlers
+	authHandler := handler.NewAuthHandler(userClient)
+	bookingHandler := handler.NewBookingHandler(bookingClient)
+	trainHandler := handler.NewTrainHandler(trainClient)
+	scheduleHandler := handler.NewScheduleHandler(scheduleClient)
+
+	r := gin.Default()
+
+	// Auth routes
+	authGroup := r.Group("/api/auth")
+	{
+		authGroup.POST("/register", gin.WrapF(authHandler.Register))
+		authGroup.POST("/login", gin.WrapF(authHandler.Login))
+		authGroup.POST("/forgot-password", gin.WrapF(authHandler.ForgotPassword))
+		authGroup.POST("/reset-password", gin.WrapF(authHandler.ResetPassword))
+	}
+
+	// Schedule routes (for searching train schedules)
+	scheduleGroup := r.Group("/api/schedules")
+	{
+		scheduleGroup.GET("/search", gin.WrapF(scheduleHandler.SearchSchedules))
+		scheduleGroup.GET("/:id", gin.WrapF(scheduleHandler.GetSchedule))
+		scheduleGroup.POST("/", gin.WrapF(scheduleHandler.CreateSchedule))
+	}
+
+	// Booking routes (protected)
+	bookingGroup := r.Group("/api/bookings")
+	bookingGroup.Use(authMiddleware.RequireAuth())
+	{
+		bookingGroup.POST("/create", gin.WrapF(bookingHandler.CreateBooking))
+		bookingGroup.GET("/:id", gin.WrapF(bookingHandler.GetBooking))
+		bookingGroup.GET("/user/:userId", gin.WrapF(bookingHandler.ListUserBookings))
+		bookingGroup.PUT("/payment-status", gin.WrapF(bookingHandler.UpdatePaymentStatus))
+		bookingGroup.DELETE("/:id", gin.WrapF(bookingHandler.CancelBooking))
+	}
+
+	// Train routes (CRUD for admin - protected)
+	trainGroup := r.Group("/api/trains")
+	trainGroup.Use(authMiddleware.RequireAuth())
+	{
+		trainGroup.POST("/", trainHandler.CreateTrain)
+		trainGroup.GET("/:id", trainHandler.GetTrain)
+		trainGroup.GET("/", trainHandler.ListTrains)
+		trainGroup.PUT("/:id", trainHandler.UpdateTrain)
+		trainGroup.DELETE("/:id", trainHandler.DeleteTrain)
+	}
+
+	// Health check
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
 
 	log.Printf("gateway listening on %s", cfg.Addr())
-	log.Fatal(http.ListenAndServe(cfg.Addr(), mux))
-}
-
-func makeProxy(targetBase, prefix string) http.Handler {
-	t, _ := url.Parse(targetBase)
-	rp := httputil.NewSingleHostReverseProxy(t)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-		if !strings.HasPrefix(r.URL.Path, "/") { r.URL.Path = "/" + r.URL.Path }
-		rp.ServeHTTP(w, r)
-	})
+	log.Fatal(r.Run(cfg.Addr()))
 }

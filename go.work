@@ -1,0 +1,10 @@
+go 1.25.0
+
+use (
+	./booking-service
+	./gateway
+	./proto
+	./schedule-service
+	./train-service
+	./user-service
+)

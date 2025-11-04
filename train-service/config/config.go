@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -10,6 +11,7 @@ import (
 type Config struct {
 	ServiceName string
 	Port        string
+	GRPCPort    int
 	DBHost      string
 	DBPort      string
 	DBName      string
@@ -32,25 +34,50 @@ func LoadEnv(prefix string) (*Config, error) {
 	}
 
 	name, err := getReq("SERVICE_NAME")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	port, err := getReq("PORT")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
+	grpcPortStr, err := getReq("GRPC_PORT")
+	if err != nil {
+		return nil, err
+	}
+	grpcPort, err := strconv.Atoi(grpcPortStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid GRPC_PORT: %v", err)
+	}
 	host, err := getReq("DB_HOST")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	dbPort, err := getReq("DB_PORT")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	dbName, err := getReq("DB_NAME")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	dbUser, err := getReq("DB_USER")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	dbPass, err := getReq("DB_PASSWORD")
-	if err != nil { return nil, err }
-	sslMode, err := getReq("DB_SSLMODE")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
+	sslMode, err := getReq("DB_SSL_MODE")
+	if err != nil {
+		return nil, err
+	}
 
 	return &Config{
 		ServiceName: name,
 		Port:        port,
+		GRPCPort:    grpcPort,
 		DBHost:      host,
 		DBPort:      dbPort,
 		DBName:      dbName,

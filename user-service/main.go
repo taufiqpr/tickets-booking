@@ -2,13 +2,20 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
-	"ticket-booking/user-service/config"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
+
+	pb "ticket-booking/proto/user"
+	"ticket-booking/user-service/config"
+	"ticket-booking/user-service/internal/handler"
+	"ticket-booking/user-service/internal/repository"
+	"ticket-booking/user-service/internal/service"
 )
 
 func main() {
@@ -25,13 +32,46 @@ func main() {
 
 	log.Println("db connected")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
-	})
-	log.Printf("%s listening on %s", cfg.ServiceName, cfg.Addr())
-	log.Fatal(http.ListenAndServe(cfg.Addr(), mux))
+	// Initialize repositories
+	userRepo := repository.NewUserRepository(pool)
+
+	// Initialize services
+	userService := service.NewUserService(userRepo, cfg.JWTSecret)
+
+	// Initialize HTTP handler
+	httpHandler := handler.NewHTTPHandler(userService)
+
+	// Start HTTP server
+	go func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		})
+
+		// Auth endpoints
+		mux.HandleFunc("/auth/register", httpHandler.Register)
+		mux.HandleFunc("/auth/login", httpHandler.Login)
+		mux.HandleFunc("/auth/forgot-password", httpHandler.ForgotPassword)
+		mux.HandleFunc("/auth/reset-password", httpHandler.ResetPassword)
+
+		log.Printf("HTTP server listening on %s", cfg.Addr())
+		log.Fatal(http.ListenAndServe(cfg.Addr(), mux))
+	}()
+
+	// Start gRPC server
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterUserServiceServer(grpcServer, handler.NewGrpcServer(userService))
+
+	log.Printf("%s gRPC server listening on port %d", cfg.ServiceName, cfg.GRPCPort)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve: %v", err)
+	}
 }
 
 func newDBPool(cfg *config.Config) (*pgxpool.Pool, error) {

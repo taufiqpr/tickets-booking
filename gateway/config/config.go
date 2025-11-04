@@ -1,48 +1,56 @@
 package config
 
 import (
-	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Port         string
-	UserBaseURL  string
-	TrainBaseURL string
-	SchedBaseURL string
-	BookBaseURL  string
+	UserHost     string
+	UserPort     int
+	TrainHost    string
+	TrainPort    int
+	ScheduleHost string
+	SchedulePort int
+	BookHost     string
+	BookPort     int
 }
 
 func LoadEnv() (*Config, error) {
 	_ = godotenv.Load()
 
-	getReq := func(k string) (string, error) {
+	getReqDefault := func(k, def string) string {
 		if v := os.Getenv(k); v != "" {
-			return v, nil
+			return v
 		}
-		return "", fmt.Errorf("missing env %s", k)
+		return def
 	}
 
-	port, err := getReq("GATEWAY_PORT")
-	if err != nil { return nil, err }
-	user, err := getReq("USER_BASE_URL")
-	if err != nil { return nil, err }
-	train, err := getReq("TRAIN_BASE_URL")
-	if err != nil { return nil, err }
-	sched, err := getReq("SCHEDULE_BASE_URL")
-	if err != nil { return nil, err }
-	book, err := getReq("BOOKING_BASE_URL")
-	if err != nil { return nil, err }
+	getPortDefault := func(k string, def int) int {
+		if v := os.Getenv(k); v != "" {
+			if port, err := strconv.Atoi(v); err == nil {
+				return port
+			}
+		}
+		return def
+	}
 
 	return &Config{
-		Port:         port,
-		UserBaseURL:  user,
-		TrainBaseURL: train,
-		SchedBaseURL: sched,
-		BookBaseURL:  book,
+		Port:         getReqDefault("GATEWAY_PORT", "8080"),
+		UserHost:     getReqDefault("USER_HOST", "localhost"),
+		UserPort:     getPortDefault("USER_PORT", 8081),
+		TrainHost:    getReqDefault("TRAIN_HOST", "localhost"),
+		TrainPort:    getPortDefault("TRAIN_GRPC_PORT", 50052),
+		ScheduleHost: getReqDefault("SCHEDULE_HOST", "localhost"),
+		SchedulePort: getPortDefault("SCHEDULE_GRPC_PORT", 50053),
+		BookHost:     getReqDefault("BOOKING_HOST", "localhost"),
+		BookPort:     getPortDefault("BOOKING_GRPC_PORT", 50054),
 	}, nil
 }
 
-func (c *Config) Addr() string { return ":" + c.Port }
+func (c *Config) Addr() string {
+	return ":" + c.Port
+}
