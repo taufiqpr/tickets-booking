@@ -32,7 +32,6 @@ func NewUserService(userRepo repository.UserRepository, jwtKey string) UserServi
 }
 
 func (s *userService) Register(ctx context.Context, username, email, password, confirmPassword string) (*repository.User, string, error) {
-
 	if password != confirmPassword {
 		return nil, "", errors.New("password and confirm password do not match")
 	}

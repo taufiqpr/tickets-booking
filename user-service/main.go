@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	pb "ticket-booking/proto/user"
 	"ticket-booking/user-service/config"
@@ -61,6 +62,8 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterUserServiceServer(grpcServer, handler.NewGrpcServer(userService))
+
+	reflection.Register(grpcServer)
 
 	log.Printf("%s gRPC server listening on port %d", cfg.ServiceName, cfg.GRPCPort)
 	if err := grpcServer.Serve(lis); err != nil {

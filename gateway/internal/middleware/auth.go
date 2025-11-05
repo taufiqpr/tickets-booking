@@ -25,7 +25,6 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Extract token from "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
@@ -51,7 +50,6 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Set user info in context
 		c.Set("user_id", int64(claims["user_id"].(float64)))
 		c.Set("username", claims["username"].(string))
 		c.Next()
@@ -66,7 +64,6 @@ func (m *AuthMiddleware) OptionalAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Extract token from "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.Next()

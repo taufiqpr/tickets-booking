@@ -2,15 +2,19 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Password string
+	ID        int64      `json:"id" db:"id"`
+	Username  string     `json:"username" db:"username"`
+	Email     string     `json:"email" db:"email"`
+	Password  string     `json:"-" db:"password"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
 }
 
 type UserRepository interface {
