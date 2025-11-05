@@ -51,7 +51,6 @@ func (h *ScheduleHandler) SearchSchedules(w http.ResponseWriter, r *http.Request
 }
 
 func (h *ScheduleHandler) GetSchedule(w http.ResponseWriter, r *http.Request) {
-	// Extract schedule ID from URL path
 	path := r.URL.Path
 	parts := strings.Split(path, "/")
 	if len(parts) < 4 {

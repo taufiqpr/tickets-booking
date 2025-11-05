@@ -32,23 +32,21 @@ func NewUserService(userRepo repository.UserRepository, jwtKey string) UserServi
 }
 
 func (s *userService) Register(ctx context.Context, username, email, password, confirmPassword string) (*repository.User, string, error) {
-	// Validate password confirmation
+
 	if password != confirmPassword {
 		return nil, "", errors.New("password and confirm password do not match")
 	}
 
-	// Check if user already exists
-	existingUser, _ := s.userRepo.GetByUsername(ctx, username)
-	if existingUser != nil {
+	_, err := s.userRepo.GetByUsername(ctx, username)
+	if err == nil {
 		return nil, "", errors.New("username already exists")
 	}
 
-	existingUser, _ = s.userRepo.GetByEmail(ctx, email)
-	if existingUser != nil {
+	_, err = s.userRepo.GetByEmail(ctx, email)
+	if err == nil {
 		return nil, "", errors.New("email already exists")
 	}
 
-	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, "", err
@@ -65,7 +63,6 @@ func (s *userService) Register(ctx context.Context, username, email, password, c
 		return nil, "", err
 	}
 
-	// Generate JWT token
 	token, err := s.generateToken(user)
 	if err != nil {
 		return nil, "", err
@@ -80,13 +77,11 @@ func (s *userService) Login(ctx context.Context, username, password string) (*re
 		return nil, "", errors.New("invalid credentials")
 	}
 
-	// Compare password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return nil, "", errors.New("invalid credentials")
 	}
 
-	// Generate JWT token
 	token, err := s.generateToken(user)
 	if err != nil {
 		return nil, "", err
@@ -105,7 +100,6 @@ func (s *userService) ForgotPassword(ctx context.Context, email string) (string,
 		return "", errors.New("email not found")
 	}
 
-	// Generate reset token (simplified - in production use proper token generation)
 	resetToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
 		"exp":     time.Now().Add(1 * time.Hour).Unix(),
@@ -117,13 +111,10 @@ func (s *userService) ForgotPassword(ctx context.Context, email string) (string,
 		return "", err
 	}
 
-	// In production, send email with reset link
-	// For now, just return the token
 	return tokenString, nil
 }
 
 func (s *userService) ResetPassword(ctx context.Context, token, newPassword string) error {
-	// Parse and validate token
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return s.jwtKey, nil
 	})
@@ -139,13 +130,11 @@ func (s *userService) ResetPassword(ctx context.Context, token, newPassword stri
 
 	userID := int64(claims["user_id"].(float64))
 
-	// Hash new password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	// Update password
 	return s.userRepo.UpdatePassword(ctx, userID, string(hashedPassword))
 }
 

@@ -17,7 +17,6 @@ func main() {
 		log.Fatalf("load env: %v", err)
 	}
 
-	// Initialize clients
 	userClient := client.NewUserHTTPClient(cfg.UserHost, cfg.UserPort)
 
 	bookingClient, err := client.NewBookingClient(cfg.BookHost, cfg.BookPort)
@@ -35,10 +34,8 @@ func main() {
 		log.Fatalf("create schedule client: %v", err)
 	}
 
-	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware("your-jwt-secret-key-here")
 
-	// Initialize handlers
 	authHandler := handler.NewAuthHandler(userClient)
 	bookingHandler := handler.NewBookingHandler(bookingClient)
 	trainHandler := handler.NewTrainHandler(trainClient)
@@ -46,7 +43,6 @@ func main() {
 
 	r := gin.Default()
 
-	// Auth routes
 	authGroup := r.Group("/api/auth")
 	{
 		authGroup.POST("/register", gin.WrapF(authHandler.Register))
@@ -55,7 +51,6 @@ func main() {
 		authGroup.POST("/reset-password", gin.WrapF(authHandler.ResetPassword))
 	}
 
-	// Schedule routes (for searching train schedules)
 	scheduleGroup := r.Group("/api/schedules")
 	{
 		scheduleGroup.GET("/search", gin.WrapF(scheduleHandler.SearchSchedules))
@@ -63,7 +58,6 @@ func main() {
 		scheduleGroup.POST("/", gin.WrapF(scheduleHandler.CreateSchedule))
 	}
 
-	// Booking routes (protected)
 	bookingGroup := r.Group("/api/bookings")
 	bookingGroup.Use(authMiddleware.RequireAuth())
 	{
@@ -74,7 +68,6 @@ func main() {
 		bookingGroup.DELETE("/:id", gin.WrapF(bookingHandler.CancelBooking))
 	}
 
-	// Train routes (CRUD for admin - protected)
 	trainGroup := r.Group("/api/trains")
 	trainGroup.Use(authMiddleware.RequireAuth())
 	{
@@ -85,7 +78,6 @@ func main() {
 		trainGroup.DELETE("/:id", trainHandler.DeleteTrain)
 	}
 
-	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})

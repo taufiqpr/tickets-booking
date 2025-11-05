@@ -1,8 +1,8 @@
-// Simple proto implementation for user service
 package user
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -17,6 +17,15 @@ type RegisterRequest struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
+func (m *RegisterRequest) Reset()         { *m = RegisterRequest{} }
+func (m *RegisterRequest) String() string { return fmt.Sprintf("%+v", *m) }
+func (*RegisterRequest) ProtoMessage()    {}
+
+func (m *RegisterRequest) GetUsername() string        { return m.Username }
+func (m *RegisterRequest) GetEmail() string           { return m.Email }
+func (m *RegisterRequest) GetPassword() string        { return m.Password }
+func (m *RegisterRequest) GetConfirmPassword() string { return m.ConfirmPassword }
+
 // RegisterResponse represents registration response
 type RegisterResponse struct {
 	UserId   int64  `json:"user_id"`
@@ -25,11 +34,27 @@ type RegisterResponse struct {
 	Token    string `json:"token"`
 }
 
+func (m *RegisterResponse) Reset()         { *m = RegisterResponse{} }
+func (m *RegisterResponse) String() string { return fmt.Sprintf("%+v", *m) }
+func (*RegisterResponse) ProtoMessage()    {}
+
+func (m *RegisterResponse) GetUserId() int64    { return m.UserId }
+func (m *RegisterResponse) GetUsername() string { return m.Username }
+func (m *RegisterResponse) GetEmail() string    { return m.Email }
+func (m *RegisterResponse) GetToken() string    { return m.Token }
+
 // LoginRequest represents login request
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
+func (m *LoginRequest) String() string { return fmt.Sprintf("%+v", *m) }
+func (*LoginRequest) ProtoMessage()    {}
+
+func (m *LoginRequest) GetUsername() string { return m.Username }
+func (m *LoginRequest) GetPassword() string { return m.Password }
 
 // LoginResponse represents login response
 type LoginResponse struct {
@@ -39,10 +64,25 @@ type LoginResponse struct {
 	Token    string `json:"token"`
 }
 
+func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
+func (m *LoginResponse) String() string { return fmt.Sprintf("%+v", *m) }
+func (*LoginResponse) ProtoMessage()    {}
+
+func (m *LoginResponse) GetUserId() int64    { return m.UserId }
+func (m *LoginResponse) GetUsername() string { return m.Username }
+func (m *LoginResponse) GetEmail() string    { return m.Email }
+func (m *LoginResponse) GetToken() string    { return m.Token }
+
 // GetUserRequest represents get user request
 type GetUserRequest struct {
 	UserId int64 `json:"user_id"`
 }
+
+func (m *GetUserRequest) Reset()         { *m = GetUserRequest{} }
+func (m *GetUserRequest) String() string { return fmt.Sprintf("%+v", *m) }
+func (*GetUserRequest) ProtoMessage()    {}
+
+func (m *GetUserRequest) GetUserId() int64 { return m.UserId }
 
 // GetUserResponse represents get user response
 type GetUserResponse struct {
@@ -51,10 +91,24 @@ type GetUserResponse struct {
 	Email    string `json:"email"`
 }
 
+func (m *GetUserResponse) Reset()         { *m = GetUserResponse{} }
+func (m *GetUserResponse) String() string { return fmt.Sprintf("%+v", *m) }
+func (*GetUserResponse) ProtoMessage()    {}
+
+func (m *GetUserResponse) GetUserId() int64    { return m.UserId }
+func (m *GetUserResponse) GetUsername() string { return m.Username }
+func (m *GetUserResponse) GetEmail() string    { return m.Email }
+
 // ForgotPasswordRequest represents forgot password request
 type ForgotPasswordRequest struct {
 	Email string `json:"email"`
 }
+
+func (m *ForgotPasswordRequest) Reset()         { *m = ForgotPasswordRequest{} }
+func (m *ForgotPasswordRequest) String() string { return fmt.Sprintf("%+v", *m) }
+func (*ForgotPasswordRequest) ProtoMessage()    {}
+
+func (m *ForgotPasswordRequest) GetEmail() string { return m.Email }
 
 // ForgotPasswordResponse represents forgot password response
 type ForgotPasswordResponse struct {
@@ -63,17 +117,39 @@ type ForgotPasswordResponse struct {
 	Token   string `json:"token"`
 }
 
+func (m *ForgotPasswordResponse) Reset()         { *m = ForgotPasswordResponse{} }
+func (m *ForgotPasswordResponse) String() string { return fmt.Sprintf("%+v", *m) }
+func (*ForgotPasswordResponse) ProtoMessage()    {}
+
+func (m *ForgotPasswordResponse) GetSuccess() bool   { return m.Success }
+func (m *ForgotPasswordResponse) GetMessage() string { return m.Message }
+func (m *ForgotPasswordResponse) GetToken() string   { return m.Token }
+
 // ResetPasswordRequest represents reset password request
 type ResetPasswordRequest struct {
 	Token       string `json:"token"`
 	NewPassword string `json:"new_password"`
 }
 
+func (m *ResetPasswordRequest) Reset()         { *m = ResetPasswordRequest{} }
+func (m *ResetPasswordRequest) String() string { return fmt.Sprintf("%+v", *m) }
+func (*ResetPasswordRequest) ProtoMessage()    {}
+
+func (m *ResetPasswordRequest) GetToken() string       { return m.Token }
+func (m *ResetPasswordRequest) GetNewPassword() string { return m.NewPassword }
+
 // ResetPasswordResponse represents reset password response
 type ResetPasswordResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
+
+func (m *ResetPasswordResponse) Reset()         { *m = ResetPasswordResponse{} }
+func (m *ResetPasswordResponse) String() string { return fmt.Sprintf("%+v", *m) }
+func (*ResetPasswordResponse) ProtoMessage()    {}
+
+func (m *ResetPasswordResponse) GetSuccess() bool   { return m.Success }
+func (m *ResetPasswordResponse) GetMessage() string { return m.Message }
 
 // UserServiceClient is the client API for UserService service.
 type UserServiceClient interface {
@@ -144,65 +220,33 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	ForgotPassword(context.Context, *ForgotPasswordRequest) (*ForgotPasswordResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
+	mustEmbedUnimplementedUserServiceServer()
 }
 
-// UnimplementedUserServiceServer can be embedded to have forward compatible implementations.
+// UnimplementedUserServiceServer must be embedded to have forward compatible implementations.
 type UnimplementedUserServiceServer struct {
 }
 
-func (*UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
+func (UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-
-func (*UnimplementedUserServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+func (UnimplementedUserServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-
-func (*UnimplementedUserServiceServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
+func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
-
-func (*UnimplementedUserServiceServer) ForgotPassword(context.Context, *ForgotPasswordRequest) (*ForgotPasswordResponse, error) {
+func (UnimplementedUserServiceServer) ForgotPassword(context.Context, *ForgotPasswordRequest) (*ForgotPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ForgotPassword not implemented")
 }
-
-func (*UnimplementedUserServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
+func (UnimplementedUserServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
 }
+func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
-func RegisterUserServiceServer(s *grpc.Server, srv UserServiceServer) {
-	s.RegisterService(&_UserService_serviceDesc, srv)
+func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
+	s.RegisterService(&UserService_ServiceDesc, srv)
 }
-
-var _UserService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "user.UserService",
-	HandlerType: (*UserServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Register",
-			Handler:    _UserService_Register_Handler,
-		},
-		{
-			MethodName: "Login",
-			Handler:    _UserService_Login_Handler,
-		},
-		{
-			MethodName: "GetUser",
-			Handler:    _UserService_GetUser_Handler,
-		},
-		{
-			MethodName: "ForgotPassword",
-			Handler:    _UserService_ForgotPassword_Handler,
-		},
-		{
-			MethodName: "ResetPassword",
-			Handler:    _UserService_ResetPassword_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
-}
-
 func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterRequest)
 	if err := dec(in); err != nil {
@@ -256,7 +300,6 @@ func _UserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	return interceptor(ctx, in, info, handler)
 }
-
 func _UserService_ForgotPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ForgotPasswordRequest)
 	if err := dec(in); err != nil {
@@ -291,4 +334,34 @@ func _UserService_ResetPassword_Handler(srv interface{}, ctx context.Context, de
 		return srv.(UserServiceServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+// UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
+var UserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.UserService",
+	HandlerType: (*UserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Register",
+			Handler:    _UserService_Register_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _UserService_Login_Handler,
+		},
+		{
+			MethodName: "GetUser",
+			Handler:    _UserService_GetUser_Handler,
+		},
+		{
+			MethodName: "ForgotPassword",
+			Handler:    _UserService_ForgotPassword_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _UserService_ResetPassword_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
 }

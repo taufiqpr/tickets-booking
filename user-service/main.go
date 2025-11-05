@@ -32,16 +32,12 @@ func main() {
 
 	log.Println("db connected")
 
-	// Initialize repositories
 	userRepo := repository.NewUserRepository(pool)
 
-	// Initialize services
 	userService := service.NewUserService(userRepo, cfg.JWTSecret)
 
-	// Initialize HTTP handler
 	httpHandler := handler.NewHTTPHandler(userService)
 
-	// Start HTTP server
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +45,6 @@ func main() {
 			_, _ = w.Write([]byte("ok"))
 		})
 
-		// Auth endpoints
 		mux.HandleFunc("/auth/register", httpHandler.Register)
 		mux.HandleFunc("/auth/login", httpHandler.Login)
 		mux.HandleFunc("/auth/forgot-password", httpHandler.ForgotPassword)
@@ -59,7 +54,6 @@ func main() {
 		log.Fatal(http.ListenAndServe(cfg.Addr(), mux))
 	}()
 
-	// Start gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)

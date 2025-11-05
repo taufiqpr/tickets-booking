@@ -41,7 +41,6 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BookingHandler) GetBooking(w http.ResponseWriter, r *http.Request) {
-	// Extract booking ID from URL path
 	path := r.URL.Path
 	parts := strings.Split(path, "/")
 	if len(parts) < 4 {
@@ -67,7 +66,6 @@ func (h *BookingHandler) GetBooking(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BookingHandler) ListUserBookings(w http.ResponseWriter, r *http.Request) {
-	// Extract user ID from URL path
 	path := r.URL.Path
 	parts := strings.Split(path, "/")
 	if len(parts) < 5 {
@@ -114,7 +112,7 @@ func (h *BookingHandler) UpdatePaymentStatus(w http.ResponseWriter, r *http.Requ
 	var req struct {
 		BookingId int64  `json:"booking_id"`
 		UserId    int64  `json:"user_id"`
-		Status    string `json:"status"` // success, failed, expired
+		Status    string `json:"status"` 
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -133,7 +131,6 @@ func (h *BookingHandler) UpdatePaymentStatus(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *BookingHandler) CancelBooking(w http.ResponseWriter, r *http.Request) {
-	// Extract booking ID from URL path
 	path := r.URL.Path
 	parts := strings.Split(path, "/")
 	if len(parts) < 4 {
