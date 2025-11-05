@@ -16,6 +16,7 @@ import (
 	"ticket-booking/user-service/config"
 	"ticket-booking/user-service/internal/handler"
 	"ticket-booking/user-service/internal/repository"
+	"ticket-booking/user-service/internal/routes"
 	"ticket-booking/user-service/internal/service"
 )
 
@@ -34,25 +35,15 @@ func main() {
 	log.Println("db connected")
 
 	userRepo := repository.NewUserRepository(pool)
-
 	userService := service.NewUserService(userRepo, cfg.JWTSecret)
-
 	httpHandler := handler.NewHTTPHandler(userService)
+	grpcHandler := handler.NewGrpcServer(userService)
+
+	httpMux := routes.SetupRoutes(httpHandler)
 
 	go func() {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("ok"))
-		})
-
-		mux.HandleFunc("/auth/register", httpHandler.Register)
-		mux.HandleFunc("/auth/login", httpHandler.Login)
-		mux.HandleFunc("/auth/forgot-password", httpHandler.ForgotPassword)
-		mux.HandleFunc("/auth/reset-password", httpHandler.ResetPassword)
-
 		log.Printf("HTTP server listening on %s", cfg.Addr())
-		log.Fatal(http.ListenAndServe(cfg.Addr(), mux))
+		log.Fatal(http.ListenAndServe(cfg.Addr(), httpMux))
 	}()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
@@ -61,7 +52,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(grpcServer, handler.NewGrpcServer(userService))
+	pb.RegisterUserServiceServer(grpcServer, grpcHandler)
 
 	reflection.Register(grpcServer)
 

@@ -43,11 +43,11 @@ func LoadEnv() (*Config, error) {
 		UserHost:     getReqDefault("USER_HOST", "localhost"),
 		UserPort:     getPortDefault("USER_PORT", 8081),
 		TrainHost:    getReqDefault("TRAIN_HOST", "localhost"),
-		TrainPort:    getPortDefault("TRAIN_GRPC_PORT", 50052),
+		TrainPort:    getPortDefault("TRAIN_PORT", 8082),
 		ScheduleHost: getReqDefault("SCHEDULE_HOST", "localhost"),
-		SchedulePort: getPortDefault("SCHEDULE_GRPC_PORT", 50053),
+		SchedulePort: getPortDefault("SCHEDULE_PORT", 8083),
 		BookHost:     getReqDefault("BOOKING_HOST", "localhost"),
-		BookPort:     getPortDefault("BOOKING_GRPC_PORT", 50054),
+		BookPort:     getPortDefault("BOOKING_PORT", 8084),
 	}, nil
 }
 
